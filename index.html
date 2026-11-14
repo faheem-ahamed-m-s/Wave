@@ -180,16 +180,14 @@ button,.row,.card,.tab{touch-action:manipulation}
 
 :root{--ga:.32;--sp:cubic-bezier(.32,.72,0,1)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ga:.55}}
-h1{position:relative;isolation:isolate}
-h1::before{content:"";position:absolute;left:-36px;top:50%;width:164px;height:78px;margin-top:-39px;border-radius:50%;pointer-events:none;z-index:-1;will-change:transform,opacity;background:radial-gradient(closest-side,rgba(255,93,93,var(--ga)),rgba(176,85,220,calc(var(--ga)*.7)) 55%,transparent);animation:logoGlow 4.5s ease-in-out infinite alternate}
-@keyframes logoGlow{from{opacity:.55;transform:scale(.94)}to{opacity:1;transform:scale(1.1)}}
-.logo{filter:drop-shadow(0 0 9px rgba(200,90,190,.55))}.logo.lg{filter:drop-shadow(0 0 22px rgba(176,85,220,.6))}
+.logo,.logo.lg{filter:brightness(0)}
+@media (prefers-color-scheme:dark){.logo,.logo.lg{filter:brightness(0) invert(1)}}
 #full{transition:transform .5s var(--sp);contain:layout style}
 .shade.open .sheet{animation:sup .45s var(--sp)}
 #list{contain:layout style}
 .row:active,.btn:active,.card:active,.tab:active{transition-duration:.1s}
 #full:not(.open) *,#full:not(.open) *::before,#full:not(.open) *::after{animation-play-state:paused!important}
-body:has(#full.open)::before,body:has(#full.open) h1::before,body:has(#full.open) #mArt{animation-play-state:paused}
+body:has(#full.open)::before,body:has(#full.open) #mArt{animation-play-state:paused}
 </style>
 </head>
 <body>
