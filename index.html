@@ -143,6 +143,24 @@ header{padding:16px 16px 12px}h1{display:flex;align-items:center;margin:0}
 .stage{width:min(76vw,330px,34vh)}#full{overflow-y:auto}
 .nx{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:8px 12px;border-radius:18px;background:var(--surf);text-align:left;box-shadow:0 2px 10px rgba(90,50,140,.1)}
 .nx .art{width:40px;height:40px;border-radius:10px}.nx .t{font-size:15px}
+
+html{background:var(--bg)}body{background:none}
+:root{--bo:.55;--ring:rgba(90,50,140,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bo:1;--ring:rgba(255,255,255,.05)}}
+body::before{content:"";position:fixed;inset:-25%;z-index:-2;pointer-events:none;opacity:var(--bo);filter:blur(36px);background:radial-gradient(38% 28% at 18% 14%,rgba(255,93,93,.5),transparent 72%),radial-gradient(42% 32% at 88% 22%,rgba(140,82,255,.6),transparent 72%),radial-gradient(46% 34% at 55% 62%,rgba(198,85,180,.22),transparent 72%),radial-gradient(50% 36% at 10% 98%,rgba(140,82,255,.35),transparent 72%);animation:drift 20s ease-in-out infinite alternate}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:repeating-radial-gradient(circle at 105% 108%,var(--ring) 0 2px,transparent 2px 26px);-webkit-mask:linear-gradient(200deg,transparent 35%,#000);mask:linear-gradient(200deg,transparent 35%,#000)}
+@keyframes drift{to{transform:translate3d(5%,4%,0) scale(1.1) rotate(4deg)}}
+.art{position:relative;overflow:hidden}
+.art::before{content:"";position:absolute;inset:0;background:linear-gradient(155deg,rgba(255,255,255,.3),transparent 50%)}
+.art::after{content:"";position:absolute;inset:0;opacity:.55;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z'/%3E%3C/svg%3E") center/42% no-repeat}
+.home{padding:2px 6px 0}.hi{font-size:30px;font-weight:800;letter-spacing:-.035em;line-height:1.1}
+.hs{color:var(--mut);margin:4px 0 18px;font-size:14px}
+.sech{font-weight:800;font-size:18px;letter-spacing:-.02em;margin:2px 0 10px}
+.rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 18px;margin:0 -6px;padding-left:6px;scrollbar-width:none}.rail::-webkit-scrollbar{display:none}
+.card{flex:none;width:136px;text-align:left;scroll-snap-align:start;transition:transform .2s}.card:active{transform:scale(.96)}
+.card .art{width:136px;height:136px;border-radius:24px;margin-bottom:9px;box-shadow:0 12px 26px rgba(60,30,110,.32)}
+.card b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card span{font-size:12px;color:var(--mut)}
+.tab{background:var(--surf);box-shadow:0 1px 6px rgba(90,50,140,.08)}
 </style>
 </head>
 <body>
@@ -212,6 +230,12 @@ function visible(){
  return l;
 }
 
+function home(){
+ const m={};tracks.forEach(t=>{const f=t.folder||'Single songs';(m[f]=m[f]||[]).push(t)});
+ const ns=[...albumOrder.filter(n=>m[n]),...Object.keys(m).sort().filter(n=>!albumOrder.includes(n))];
+ const hr=new Date().getHours(),g=hr<5?'Late night vibes':hr<12?'Good morning':hr<17?'Good afternoon':hr<21?'Good evening':'Good night';
+ return `<div class="home"><div class="hi">${g}</div><div class="hs">${tracks.length} songs across ${ns.length} album${ns.length===1?'':'s'}</div>`+(ns.length>1?`<div class="sech">Your albums</div><div class="rail">${ns.slice(0,12).map(n=>`<button class="card" data-al="${esc(n)}"><div class="art" style="${artCss(n)}"></div><b>${esc(n)}</b><span>${m[n].length} songs</span></button>`).join('')}</div>`:'')+'<div class="sech">All songs</div></div>';
+}
 function render(){
  $('#tabs').innerHTML=[['all','Songs'],['albums','Albums'],['fav','Favorites'],['pls','Playlists']].map(([k,l])=>`<button class="tab ${(view===k||(k==='pls'&&view.startsWith('pl:'))||(k==='albums'&&view.startsWith('al:')))?'on':''}" data-v="${k}">${l}</button>`).join('');
  const L=$('#list');
@@ -229,7 +253,7 @@ function render(){
  const l=visible();
  if(!tracks.length){L.innerHTML='<div class="empty"><img class="logo lg" src="'+LOGO+'" alt="Wave"><br><b>Your library is empty.</b><br>Tap “Add songs” to pick music from your phone. Songs stay saved in this app and play offline, with no ads.</div>';return}
  if(!l.length){L.innerHTML='<div class="empty">Nothing here yet.</div>';return}
- L.innerHTML=(view.startsWith('pl:')||view.startsWith('al:')?`<div style="padding:4px 8px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="flex:1">${esc(view.slice(3))}</span>${view.startsWith('al:')?`<button class="chip" data-ral="${esc(view.slice(3))}">Rename</button>`:''}</div>`:'')+`<div class="acts"><button class="btn${shuffle?'':' pri'}" id="playAll">${ic('play')}Play all</button><button class="btn${shuffle?' pri':''}" id="shufAll">${ic('shuf')}Shuffle</button><button class="btn" id="sortBtn">${SORTS[sortI]}</button><button class="btn" id="qopen" style="flex:none;padding:12px 14px" aria-label="Queue">${ic('queue')}</button></div>`+l.map(t=>`<div class="row ${cur&&cur.id===t.id?'cur':''}" data-id="${esc(t.id)}" role="button" tabindex="0"><div class="art" style="${artCss(t.title)}"></div><div class="meta"><div class="t">${esc(t.title)}</div><div class="a">${esc(t.artist)}</div></div><button class="more" data-f="${esc(t.id)}" aria-label="Favorite" style="${t.fav?'color:var(--ac)':''}">${ic(t.fav?'heart':'heartO',' style="width:20px;height:20px"')}</button><button class="more" data-m="${esc(t.id)}" aria-label="Song options">${ic('dots')}</button></div>`).join('');
+ L.innerHTML=(view==='all'&&!q?home():'')+(view.startsWith('pl:')||view.startsWith('al:')?`<div style="padding:4px 8px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="flex:1">${esc(view.slice(3))}</span>${view.startsWith('al:')?`<button class="chip" data-ral="${esc(view.slice(3))}">Rename</button>`:''}</div>`:'')+`<div class="acts"><button class="btn${shuffle?'':' pri'}" id="playAll">${ic('play')}Play all</button><button class="btn${shuffle?' pri':''}" id="shufAll">${ic('shuf')}Shuffle</button><button class="btn" id="sortBtn">${SORTS[sortI]}</button><button class="btn" id="qopen" style="flex:none;padding:12px 14px" aria-label="Queue">${ic('queue')}</button></div>`+l.map(t=>`<div class="row ${cur&&cur.id===t.id?'cur':''}" data-id="${esc(t.id)}" role="button" tabindex="0"><div class="art" style="${artCss(t.title)}"></div><div class="meta"><div class="t">${esc(t.title)}</div><div class="a">${esc(t.artist)}</div></div><button class="more" data-f="${esc(t.id)}" aria-label="Favorite" style="${t.fav?'color:var(--ac)':''}">${ic(t.fav?'heart':'heartO',' style="width:20px;height:20px"')}</button><button class="more" data-m="${esc(t.id)}" aria-label="Song options">${ic('dots')}</button></div>`).join('');
 }
 
 function playTrack(id,list,xf,back){
